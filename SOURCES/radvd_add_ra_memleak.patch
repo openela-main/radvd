@@ -1,0 +1,25 @@
+From 5ad279f48c0f3d94573e3f3c887f86cd10476c2d Mon Sep 17 00:00:00 2001
+From: David Hallas <david@davidhallas.dk>
+Date: Wed, 4 Apr 2018 06:36:12 +0200
+Subject: [PATCH] Fixes memory leak in add_ra_options_dnssl
+
+The add_ra_options_dnssl function failed to free memory before
+returning.
+---
+ send.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/send.c b/send.c
+index 0a4951a..4b83d57 100644
+--- a/send.c
++++ b/send.c
+@@ -527,8 +527,8 @@ static struct safe_buffer_list *add_ra_options_dnssl(struct safe_buffer_list *sb
+ 
+ 		dnssl = dnssl->next;
+ 	}
+-	return sbl;
+ 	safe_buffer_free(serialized_domains);
++	return sbl;
+ }
+ 
+ /*
