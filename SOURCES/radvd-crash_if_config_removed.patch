@@ -1,0 +1,65 @@
+From 57295ef0e85640adcc3b85f08b12f09d54aad2d2 Mon Sep 17 00:00:00 2001
+From: Tomi Salminen <tsalminen@forcepoint.com>
+Date: Tue, 16 Apr 2019 13:55:39 +0300
+Subject: [PATCH] Crash on SIGHUP when config file removed.
+
+Reading config zeroed the returnable configuration only when the
+config file was opened successfully. If not, the previously read
+in configuration was returned, which was already freed.
+
+Moved configuration zeroing to start of readin_config and added
+unit test to test zero return.
+---
+ gram.y      |  2 +-
+ test/util.c | 15 +++++++++++++++
+ 2 files changed, 16 insertions(+), 1 deletion(-)
+
+diff --git a/gram.y b/gram.y
+index 20af2f3..4115390 100644
+--- a/gram.y
++++ b/gram.y
+@@ -947,10 +947,10 @@ static void cleanup(void)
+ 
+ struct Interface * readin_config(char const *path)
+ {
++	IfaceList = 0;
+ 	FILE * in = fopen(path, "r");
+ 	if (in) {
+ 		filename = path;
+-		IfaceList = 0;
+ 		num_lines = 1;
+ 		iface = 0;
+ 
+diff --git a/test/util.c b/test/util.c
+index b74b301..7124475 100644
+--- a/test/util.c
++++ b/test/util.c
+@@ -259,6 +259,20 @@ START_TEST(test_rand_between)
+ }
+ END_TEST
+ 
++START_TEST(test_cfg_removal_with_sighup)
++{
++  struct Interface *tmpIface = NULL;
++
++  tmpIface = readin_config("test/test1.conf");
++  ck_assert(tmpIface);
++
++  free_ifaces(tmpIface);
++
++  tmpIface = readin_config("test/file_that_should_not_exists.conf");
++  ck_assert(!tmpIface);
++}
++END_TEST
++
+ Suite *util_suite(void)
+ {
+ 	TCase *tc_safe_buffer = tcase_create("safe_buffer");
+@@ -288,6 +302,7 @@ Suite *util_suite(void)
+ 
+ 	TCase *tc_misc = tcase_create("misc");
+ 	tcase_add_test(tc_misc, test_rand_between);
++	tcase_add_test(tc_misc, test_cfg_removal_with_sighup);
+ 
+ 	Suite *s = suite_create("util");
+ 	suite_add_tcase(s, tc_safe_buffer);

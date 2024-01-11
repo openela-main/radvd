@@ -1,0 +1,18 @@
+From 30198b37dd9d8cb3b15c90663145d06e2531d87f Mon Sep 17 00:00:00 2001
+From: Pavel Zhukov <pzhukov@redhat.com>
+Date: Tue, 26 Feb 2019 14:37:16 +0100
+Subject: [PATCH] packaging: Change location of tmpfiles to /run to avoid
+ warnings
+
+Bug-Url: https://bugzilla.redhat.com/show_bug.cgi?id=1678147
+---
+ redhat/systemd/radvd-tmpfs.conf | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/redhat/systemd/radvd-tmpfs.conf b/redhat/systemd/radvd-tmpfs.conf
+index 590652c..26f203d 100644
+--- a/redhat/radvd-tmpfs.conf
++++ b/redhat/radvd-tmpfs.conf
+@@ -1 +1 @@
+-d	/var/run/radvd	0755 radvd radvd
++d	/run/radvd	0755 radvd radvd
